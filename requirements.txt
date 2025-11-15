@@ -1,0 +1,22 @@
+streamlit==1.51.0
+python-dotenv==1.2.1
+
+# --- Core AI stack ---
+groq==0.33.0
+langchain==1.0.3
+langchain-core==1.0.2
+langchain-groq==1.0.0
+langgraph==1.0.2
+
+# --- Memory, RAG & utilities ---
+faiss-cpu==1.8.0.post1
+duckduckgo-search==8.1.1
+pandas==2.3.3
+numpy==2.3.4
+
+# --- Monitoring & logging ---
+langsmith==0.4.38
+
+# --- Optional extras for future phases ---
+tiktoken==0.8.0
+sqlalchemy==2.0.36

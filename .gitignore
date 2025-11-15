@@ -1,0 +1,44 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Environments
+env/
+venv/
+.myenv/
+myenv/
+.venv/
+
+# Streamlit cache
+.streamlit/
+
+# Uploaded / temporary files
+tmp_uploads/
+uploaded_pdfs/
+uploads/
+*.pdf
+
+# Chroma vector DB
+chroma_db/
+*/chroma_db/
+**/chroma_db/
+
+# SQLite DB
+memory.db
+chat_memory.db
+*.sqlite3
+
+# Logs
+logs/
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# VSCode
+.vscode/
+
+.env
+*.env
