@@ -92,7 +92,7 @@ The system uses a routing mechanism to auto-detect which tool to use.
 
 ### 2.5 High‑Performance LLM with Streaming
 
-Nova uses the **Groq API (llama-3.3-70b-versatile)** for:
+Nova uses the **Groq API ()** for:
 - Fast inference
 - Streaming tokens directly into UI
 - Smooth typing effect in Streamlit
@@ -210,6 +210,8 @@ Uses RAG to fetch relevant PDF sections.
 ```
 Calculate 5*(23-4)/3
 
+```
+---
 ```
 ## 4. Demo Screenshot
 
