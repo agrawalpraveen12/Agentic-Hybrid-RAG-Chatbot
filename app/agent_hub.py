@@ -78,14 +78,15 @@ def _decide_tools(user_text: str, docs_exist: bool):
 
     use_memory = any(k in t for k in ["my", "profile", "remember", "name", "teacher", "friend"])
     use_math = any(k in t for k in ["calculate", "compute", "+", "-", "*", "/", "^"])
+    use_search = any(k in t for k in ["search", "google", "web", "current", "news", "find", "who is", "what is"])
 
-    return {"use_rag": use_rag, "use_memory": use_memory, "use_math": use_math}
+    return {"use_rag": use_rag, "use_memory": use_memory, "use_math": use_math, "use_search": use_search}
 
 
 # ---------------------------------------------------------
 # Prompt Creation (CLEANED)
 # ---------------------------------------------------------
-def _compose_prompt(user_text: str, mem: dict, rag_excerpt: str, math_answer: Optional[object], tools: dict):
+def _compose_prompt(user_text: str, mem: dict, rag_excerpt: str, search_results: str, math_answer: Optional[object], tools: dict):
     lines = [
         "You are Nova, a helpful and factual AI assistant.",
         "",
@@ -94,9 +95,10 @@ def _compose_prompt(user_text: str, mem: dict, rag_excerpt: str, math_answer: Op
     # Basic memory usage (no unnecessary sentences)
     if mem.get("name"):
         lines.append(f"User name: {mem['name']}.")
-    if mem.get("facts"):
-        fact_str = "; ".join([f"{k}: {v}" for k, v in mem["facts"]])
-        lines.append(f"Memory facts: {fact_str}")
+        if mem.get("facts"):
+            # facts is list of (category, label, value)
+            fact_str = "; ".join([f"{item[1]}: {item[2]}" for item in mem["facts"]])
+            lines.append(f"Memory facts: {fact_str}")
 
     # Include RAG context ONLY if available
     if rag_excerpt:
@@ -105,8 +107,12 @@ def _compose_prompt(user_text: str, mem: dict, rag_excerpt: str, math_answer: Op
     if math_answer is not None:
         lines.append(f"\nMath result: {math_answer}")
 
+    if search_results:
+        lines.append("\nWeb Search Results (Use to answer if relevant):")
+        lines.append(search_results)
+
     lines.append("\nUser: " + user_text)
-    lines.append("Provide the best possible answer without mentioning tool usage unless helpful.")
+    lines.append("Provide the best possible answer. If document context is provided, prioritize it. If search results are provided, use them for up-to-date info.")
 
     return "\n".join(lines)
 
@@ -136,10 +142,20 @@ def run_agent(
 
     # RAG
     rag_results, rag_excerpt = [], ""
+    # Increased top_k for better context handling
     if tools["use_rag"]:
-        rag_results = rag_query_fn(rag_index, user_text, top_k)
+        rag_results = rag_query_fn(rag_index, user_text, top_k=5)
         if rag_results:
-            rag_excerpt = "\n\n".join([txt for txt, score in rag_results])
+             rag_excerpt = "\n\n".join([f"[Source: {txt[:20]}...] {txt}" for txt, score in rag_results])
+
+    # Search
+    search_results = ""
+    # Import locally to avoid circular deps if any
+    from .search_tool import web_search
+    if tools["use_search"] and not rag_excerpt: 
+         res = web_search(user_text, limit=3)
+         if res:
+             search_results = "\n".join([f"- {r.get('title')}: {r.get('body')}" for r in res])
 
     # Math
     math_answer = None
@@ -155,6 +171,7 @@ def run_agent(
         user_text=user_text,
         mem=mem,
         rag_excerpt=rag_excerpt,
+        search_results=search_results,
         math_answer=math_answer,
         tools=tools
     )

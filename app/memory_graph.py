@@ -1,7 +1,10 @@
 # memory_graph.py
 import sqlite3, os
 
-DB_PATH = "memory.db"
+# Resolving path relative to this file
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+PROJECT_ROOT = os.path.dirname(BASE_DIR)
+DB_PATH = os.path.join(PROJECT_ROOT, "data", "memory.db")
 
 def init_db():
     conn = sqlite3.connect(DB_PATH)
@@ -54,6 +57,23 @@ def clear_history(thread_id):
     cur.execute("DELETE FROM chat_history WHERE thread_id=?", (thread_id,))
     conn.commit()
     conn.close()
+
+def get_recent_threads(limit=10):
+    conn = sqlite3.connect(DB_PATH)
+    cur = conn.cursor()
+    # Get unique threads and their first message as title
+    query = """
+    SELECT thread_id, 
+           (SELECT content FROM chat_history ch2 WHERE ch2.thread_id = ch1.thread_id AND role='user' ORDER BY id LIMIT 1) as title
+    FROM chat_history ch1
+    GROUP BY thread_id
+    ORDER BY MAX(id) DESC
+    LIMIT ?
+    """
+    cur.execute(query, (limit,))
+    rows = cur.fetchall()
+    conn.close()
+    return [{"id": r[0], "title": r[1] or "New Chat"} for r in rows]
 
 # ---------------- Profile ----------------
 def save_profile(key, value):

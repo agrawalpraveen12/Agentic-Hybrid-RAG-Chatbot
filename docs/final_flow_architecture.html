@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nova Flow Architecture - Final</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            /* Distinct colors for each layer */
+            --input-c: #01579b;
+            --input-bg: #e1f5fe;
+            --tool-c: #4a148c;
+            --tool-bg: #f3e5f5;
+            --route-c: #b71c1c;
+            --route-bg: #ffebee;
+            --db-c: #e65100;
+            --db-bg: #fff3e0;
+            --exec-c: #004d40;
+            --exec-bg: #e0f2f1;
+            --out-c: #1b5e20;
+            --out-bg: #e8f5e9;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #ffffff;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .flow-wrapper {
+            width: 1200px;
+            height: 950px;
+            position: relative;
+            background: white;
+            /* Debug grid */
+            /* background-image: linear-gradient(#eee .1em, transparent .1em), linear-gradient(90deg, #eee .1em, transparent .1em); background-size: 50px 50px; */
+        }
+
+        /* NODES */
+        .node {
+            position: absolute;
+            width: 180px;
+            height: 80px;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            color: white;
+            font-weight: 700;
+            font-size: 14px;
+            box-shadow: 0 6px 10px rgba(0, 0, 0, 0.2);
+            z-index: 10;
+        }
+
+        .node i {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+
+        .node span {
+            font-size: 11px;
+            font-weight: 400;
+            opacity: 0.9;
+            display: block;
+            margin-top: 3px;
+        }
+
+        /* Layer Labels */
+        .layer-title {
+            position: absolute;
+            font-size: 14px;
+            font-weight: 900;
+            text-transform: uppercase;
+            color: #555;
+            background: rgba(240, 240, 240, 0.9);
+            padding: 4px 12px;
+            border-radius: 4px;
+            z-index: 5;
+            border-left: 5px solid #555;
+        }
+
+        /* 1. INPUT LAYER */
+        .l-input {
+            border-left-color: var(--input-c);
+            top: 50px;
+            left: 50px;
+        }
+
+        #user {
+            top: 30px;
+            left: 510px;
+            background: var(--input-c);
+            width: 180px;
+        }
+
+        #text-q {
+            top: 150px;
+            left: 350px;
+            background: var(--input-c);
+        }
+
+        #pdf-q {
+            top: 150px;
+            left: 670px;
+            background: var(--input-c);
+        }
+
+        /* 2. TOOL LAYER */
+        .l-tool {
+            border-left-color: var(--tool-c);
+            top: 260px;
+            left: 50px;
+        }
+
+        #fastapi {
+            top: 280px;
+            left: 350px;
+            background: var(--tool-c);
+        }
+
+        #parser {
+            top: 280px;
+            left: 670px;
+            background: var(--tool-c);
+        }
+
+        /* 3. ROUTING LAYER */
+        .l-route {
+            border-left-color: var(--route-c);
+            top: 400px;
+            left: 50px;
+        }
+
+        #hub {
+            top: 400px;
+            left: 510px;
+            background: var(--route-c);
+        }
+
+        #router-d {
+            position: absolute;
+            top: 510px;
+            left: 550px;
+            width: 100px;
+            height: 100px;
+            background: var(--route-c);
+            transform: rotate(45deg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+        }
+
+        #router-d div {
+            transform: rotate(-45deg);
+            color: white;
+            font-weight: bold;
+            font-size: 12px;
+            text-align: center;
+        }
+
+        /* DBMS (Side) */
+        .l-db {
+            border-left-color: var(--db-c);
+            top: 350px;
+            left: 800px;
+        }
+
+        #sqlite {
+            top: 400px;
+            left: 800px;
+            background: var(--db-c);
+            width: 220px;
+        }
+
+        #chroma {
+            top: 530px;
+            left: 800px;
+            background: var(--db-c);
+            width: 220px;
+        }
+
+        /* 4. EXECUTION LAYER */
+        .l-exec {
+            border-left-color: var(--exec-c);
+            top: 650px;
+            left: 50px;
+        }
+
+        #math {
+            top: 660px;
+            left: 100px;
+            background: var(--exec-c);
+        }
+
+        #search {
+            top: 660px;
+            left: 320px;
+            background: var(--exec-c);
+        }
+
+        #rag {
+            top: 660px;
+            left: 540px;
+            background: var(--exec-c);
+        }
+
+        #chat {
+            top: 660px;
+            left: 760px;
+            background: var(--exec-c);
+        }
+
+        /* 5. OUTPUT LAYER */
+        .l-out {
+            border-left-color: var(--out-c);
+            top: 790px;
+            left: 50px;
+        }
+
+        #stream {
+            top: 790px;
+            left: 510px;
+            background: var(--out-c);
+        }
+
+        #ui {
+            top: 880px;
+            left: 510px;
+            background: var(--out-c);
+        }
+
+
+        /* SVG Arrows */
+        svg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        path {
+            fill: none;
+            stroke: #444;
+            /* Dark grey */
+            stroke-width: 3;
+            /* Thick */
+            marker-end: url(#arrowhead);
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="flow-wrapper">
+
+        <!-- LABELS -->
+        <div class="layer-title l-input">INPUT LAYER</div>
+        <div class="layer-title l-tool">TOOL LAYER</div>
+        <div class="layer-title l-route">ROUTING LAYER</div>
+        <div class="layer-title l-db">DBMS LAYER</div>
+        <div class="layer-title l-exec">EXECUTION LAYER</div>
+        <div class="layer-title l-out">OUTPUT LAYER</div>
+
+        <svg>
+            <defs>
+                <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                    <polygon points="0 0, 10 3.5, 0 7" fill="#444" />
+                </marker>
+            </defs>
+
+            <!-- User -> Text/PDF -->
+            <path d="M 600 110 L 600 130 L 440 130 L 440 150" />
+            <path d="M 600 110 L 600 130 L 760 130 L 760 150" />
+
+            <!-- Text/PDF -> Tools -->
+            <path d="M 440 230 L 440 280" />
+            <path d="M 760 230 L 760 280" />
+
+            <!-- Tools -> Hub -->
+            <path d="M 440 360 L 440 380 L 600 380 L 600 400" />
+            <path d="M 760 360 L 760 380 L 600 380" />
+
+            <!-- Parser -> Chroma (Data Ingestion) -->
+            <path d="M 760 360 L 760 570 L 800 570" style="stroke-dasharray: 6; stroke: #fb8c00;" />
+
+            <!-- Hub -> Router -->
+            <path d="M 600 480 L 600 510" />
+
+            <!-- Hub <-> Memory (Bidirectional) -->
+            <path d="M 690 440 L 800 440" style="marker-start: url(#arrowhead); stroke-width: 2;" />
+
+            <!-- Router -> Executives -->
+            <path d="M 565 565 L 190 565 L 190 660" /> <!-- Math -->
+            <path d="M 565 565 L 410 565 L 410 660" /> <!-- Search -->
+            <path d="M 635 565 L 630 565 L 630 660" /> <!-- RAG -->
+            <path d="M 635 565 L 850 565 L 850 660" /> <!-- Chat -->
+
+            <!-- RAG <-> Chroma -->
+            <path d="M 630 700 L 630 720 L 910 720 L 910 610" style="stroke-dasharray: 6; stroke: #fb8c00;" />
+
+            <!-- Executors -> Output stream -->
+            <path d="M 190 740 L 190 760 L 600 760 L 600 790" />
+            <path d="M 410 740 L 410 760 L 600 760" />
+            <path d="M 630 740 L 630 760 L 600 760" />
+            <path d="M 850 740 L 850 760 L 600 760" />
+
+            <!-- Stream -> UI -->
+            <path d="M 600 870 L 600 880" />
+
+        </svg>
+
+        <!-- NODES -->
+        <div id="user" class="node">
+            <i class="fa-solid fa-user"></i> User
+        </div>
+
+        <div id="text-q" class="node">
+            <i class="fa-solid fa-message"></i> Text Query
+        </div>
+        <div id="pdf-q" class="node">
+            <i class="fa-solid fa-file-pdf"></i> PDF Upload
+        </div>
+
+        <div id="fastapi" class="node">
+            <i class="fa-solid fa-server"></i> FastAPI
+            <span>API Handler</span>
+        </div>
+        <div id="parser" class="node">
+            <i class="fa-solid fa-file-lines"></i> PDF Parser
+            <span>PyPDF</span>
+        </div>
+
+        <div id="sqlite" class="node">
+            <i class="fa-solid fa-database"></i> SQLite Graph
+            <span>Memory & Profile</span>
+        </div>
+        <div id="chroma" class="node">
+            <i class="fa-solid fa-layer-group"></i> ChromaDB
+            <span>Vector Store</span>
+        </div>
+
+        <div id="hub" class="node">
+            <i class="fa-solid fa-brain"></i> Agent Hub
+            <span>Orchestrator</span>
+        </div>
+        <div id="router-d">
+            <div>Select<br>Tool</div>
+        </div>
+
+        <div id="math" class="node">
+            <i class="fa-solid fa-calculator"></i> Math
+            <span>AST Eval</span>
+        </div>
+        <div id="search" class="node">
+            <i class="fa-brands fa-searchengin"></i> Web Search
+            <span>DuckDuckGo</span>
+        </div>
+        <div id="rag" class="node">
+            <i class="fa-solid fa-magnifying-glass-arrow-right"></i> RAG Query
+            <span>Retrieve Context</span>
+        </div>
+        <div id="chat" class="node">
+            <i class="fa-solid fa-robot"></i> Chat Gen
+            <span>Groq Llama-3</span>
+        </div>
+
+        <div id="stream" class="node">
+            <i class="fa-solid fa-reply"></i> Stream Response
+            <span>Token Output</span>
+        </div>
+        <div id="ui" class="node">
+            <i class="fa-solid fa-desktop"></i> Web Interface
+            <span>Frontend</span>
+        </div>
+
+    </div>
+
+</body>
+
+</html>
